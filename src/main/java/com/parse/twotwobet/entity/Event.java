@@ -13,7 +13,6 @@ import java.util.List;
 public class Event {
     private int id;
     private int sportId;
-    private int filterId;
     private String teamHome;
     private String teamAway;
     private LocalDateTime dateStart;

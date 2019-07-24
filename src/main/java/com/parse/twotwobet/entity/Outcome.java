@@ -9,7 +9,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Outcome {
     private int id;
-    private int filterId;
+    private Integer filterId;
     private String name;
     private double coefficient;
     private String additionalValue;
