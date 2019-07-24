@@ -5,7 +5,6 @@ import com.parse.twotwobet.entity.Event;
 import com.parse.twotwobet.entity.Filter;
 import com.parse.twotwobet.entity.Outcome;
 import com.parse.twotwobet.entity.Sport;
-import com.parse.twotwobet.entity.Tournament;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,7 @@ public class ParseService {
 
         List<Sport> sports = generalInfoParseService.parseSports(jsonNode);
 
-        List<Tournament> tournaments = generalInfoParseService.parseTournaments(jsonNode);
+        generalInfoParseService.parseTournaments(jsonNode);
         generalInfoParseService.setTournamentsForSport(sports);
 
         List<Filter> filters = generalInfoParseService.parseFiltersForNeededSports(sports);
