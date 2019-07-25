@@ -30,7 +30,7 @@ public class ParseService {
     private FilterService filterService;
 
     @PostConstruct
-    public void init(){
+    public void parse(){
         JsonNode jsonNode = generalInfoParseService.getMenuJson();
 
         List<Sport> sports = generalInfoParseService.parseSports(jsonNode);
@@ -40,43 +40,43 @@ public class ParseService {
 
         List<Filter> filters = generalInfoParseService.parseFiltersForNeededSports(sports);
 
-        sports.forEach(sport -> {
+        sports.forEach(sport -> new Thread(() -> {
             System.out.println(sport.getName());
 
             sport.getTournaments().forEach(tournament -> {
-                    System.out.println(tournament.getName());
+                System.out.println(tournament.getName());
 
-                    List<Event> events = eventParseService.parseEventsByTournament(tournament);
-                    events.forEach(event -> {
-                        System.out.println(String.format("%s X %s, %s, %d", event.getTeamHome(), event.getTeamAway(),
-                                EventParseService.OUTPUT_FORMATTER.format(event.getDateStart()), event.getId()));
+                List<Event> events = eventParseService.parseEventsByTournament(tournament);
+                events.forEach(event -> {
+                    System.out.println(String.format("%s X %s, %s, %d", event.getTeamHome(), event.getTeamAway(),
+                            EventParseService.OUTPUT_FORMATTER.format(event.getDateStart()), event.getId()));
 
-                        List<Outcome> outcomes = eventParseService.parseOutcomesByEvent(event);
+                    List<Outcome> outcomes = eventParseService.parseOutcomesByEvent(event);
 
-                        HashSet<Integer> setOfFiltersInOutcomesByEvent = new HashSet<>();
-                        outcomes.forEach(outcome -> setOfFiltersInOutcomesByEvent.add(outcome.getFilterId()));
+                    HashSet<Integer> setOfFiltersInOutcomesByEvent = new HashSet<>();
+                    outcomes.forEach(outcome -> setOfFiltersInOutcomesByEvent.add(outcome.getFilterId()));
 
-                        HashMap<Integer, List<Outcome>> filterIdWithOutcomes = new HashMap<>();
-                        setOfFiltersInOutcomesByEvent.forEach(filterId -> {
-                            List<Outcome> outcomeList = new ArrayList<>();
-                            outcomes.forEach(outcome -> {
-                                if(filterId.equals(outcome.getFilterId())){
-                                    outcomeList.add(outcome);
-                                }
-                            });
-                            filterIdWithOutcomes.put(filterId, outcomeList);
+                    HashMap<Integer, List<Outcome>> filterIdWithOutcomes = new HashMap<>();
+                    setOfFiltersInOutcomesByEvent.forEach(filterId -> {
+                        List<Outcome> outcomeList = new ArrayList<>();
+                        outcomes.forEach(outcome -> {
+                            if(filterId.equals(outcome.getFilterId())){
+                                outcomeList.add(outcome);
+                            }
                         });
-
-                        for(Map.Entry<Integer, List<Outcome>> entry: filterIdWithOutcomes.entrySet()) {
-                            System.out.println(filterService.getFilterNameByFilterId(filters, entry.getKey()));
-
-                            entry.getValue().forEach(outcome -> System.out.println(String.format("       %s %s, %f, %d",
-                                    outcome.getName(), outcome.getAdditionalValue(),
-                                    outcome.getCoefficient(), outcome.getId())));
-                        }
+                        filterIdWithOutcomes.put(filterId, outcomeList);
                     });
+
+                    for(Map.Entry<Integer, List<Outcome>> entry: filterIdWithOutcomes.entrySet()) {
+                        System.out.println(filterService.getFilterNameByFilterId(filters, entry.getKey()));
+
+                        entry.getValue().forEach(outcome -> System.out.println(String.format("       %s %s, %f, %d",
+                                outcome.getName(), outcome.getAdditionalValue(),
+                                outcome.getCoefficient(), outcome.getId())));
+                    }
+                });
             });
-        });
+        }).start());
     }
 
 }
